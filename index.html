@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Resort Navigation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    
+    <!-- Load Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <style>
+        body { padding: 0; margin: 0; }
+        html, body, #map { height: 100%; width: 100vw; }
+        .leaflet-container { background: #f8f9fa; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <script>
+        // 1. Initialize the map centered exactly on the resort
+        var map = L.map('map').setView([26.263482, 73.128922], 18);
+
+        // 2. Load standard street map tiles as the base layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 22,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        // 3. Define the exact bounding box for the layout image
+        var imageBounds = [
+            [26.264527237874404, 73.13023242438025], // Top-Left Corner
+            [26.26243701399575, 73.12761190634858]   // Bottom-Right Corner
+        ];
+        
+        // Overlay the layout image
+        L.imageOverlay('hotel-layout.jpg', imageBounds, {
+            opacity: 0.9,
+            interactive: true
+        }).addTo(map);
+
+        // 4. Define the 7 Key Venues with Exact Coordinates
+        var venues = [
+            { name: "Residential Garden 1 & 2", coords: [26.263426507589234, 73.12919440957582] },
+            { name: "Mandore Lawn 1 & 2", coords: [26.262656801977588, 73.12797400455233] },
+            { name: "Sandstorm Courtyard", coords: [26.26339764371953, 73.12838170029231] },
+            { name: "Chinkara", coords: [26.263123436614617, 73.12815773586081] },
+            { name: "Pool", coords: [26.263385617106557, 73.12924403045795] },
+            { name: "Amphitheatre Garden", coords: [26.263851046160262, 73.12959674092569] },
+            { name: "Mandore Garden 3 (Glass house)", coords: [26.264181776270437, 73.1300178477455] }
+        ];
+
+        // 5. Add markers to the map
+        venues.forEach(function(venue) {
+            L.marker(venue.coords)
+             .bindPopup('<b>' + venue.name + '</b>')
+             .addTo(map);
+        });
+
+        // 6. Enable real-time user location tracking
+        // Note: GPS tracking requires the site to be hosted on HTTPS to work on mobile devices
+        map.locate({setView: false, maxZoom: 19, watch: true});
+
+        function onLocationFound(e) {
+            var radius = e.accuracy;
+            L.marker(e.latlng).addTo(map)
+                .bindPopup("You are here").openPopup();
+            L.circle(e.latlng, radius).addTo(map);
+        }
+        map.on('locationfound', onLocationFound);
+        
+        // Error handling if location access is denied
+        map.on('locationerror', function(e) {
+            console.log("Location access denied or unavailable.");
+        });
+    </script>
+</body>
+</html>
